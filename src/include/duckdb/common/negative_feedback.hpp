@@ -170,7 +170,8 @@ public:
 		return instance;
 	}
 
-	inline void Initialize(size_t address, const std::vector<size_t> &arms = {32, 64, 128, 256, 384, 512, 768, 1024}) {
+	inline void Initialize(size_t address,
+	                       const std::vector<size_t> &arms = {0, 32, 64, 128, 256, 384, 512, 768, 1024}) {
 		D_ASSERT(package_index_.count(address) == 0);
 
 		package_index_[address] = bandit_packages_.size();
