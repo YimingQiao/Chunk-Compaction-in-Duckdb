@@ -682,11 +682,11 @@ void PartitionMergeEvent::Schedule() {
 	const idx_t active_threads = TaskScheduler::GetScheduler(context).NumberOfThreads();
 	idx_t num_threads = ThreadScheduler::Get().GetThreadSetting("PARTITION_MERGE", "PARTITION_MERGE", false);
 	num_threads = num_threads ? num_threads : active_threads;
-	auto now = std::chrono::system_clock::now();
-	auto duration = now.time_since_epoch();
-	auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
-	std::cerr << " [Open] Merge Partition\t #task/#thread: " + std::to_string(num_threads) + "/" +
-	                 std::to_string(active_threads) + "\tTick: " + std::to_string(milliseconds) + "ms\n";
+	//	auto now = std::chrono::system_clock::now();
+	//	auto duration = now.time_since_epoch();
+	//	auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000000;
+	//	std::cerr << " [Open] Merge Partition\t #task/#thread: " + std::to_string(num_threads) + "/" +
+	//	                 std::to_string(active_threads) + "\tTick: " + std::to_string(milliseconds) + "ms\n";
 
 	vector<shared_ptr<Task>> merge_tasks;
 	for (idx_t tnum = 0; tnum < num_threads; tnum++) {
