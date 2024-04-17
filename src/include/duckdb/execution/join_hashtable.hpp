@@ -75,10 +75,10 @@ public:
 		bool finished;
 
 		// buffer
-		unique_ptr<DataChunk> buffer;
+		DataChunk *buffer;
 		SelectionVector target_vector;
 
-		explicit ScanStructure(JoinHashTable &ht, TupleDataChunkState &key_state);
+		explicit ScanStructure(JoinHashTable &ht, TupleDataChunkState &key_state, DataChunk *buffer);
 		//! Get the next batch of data from the scan structure
 		void Next(DataChunk &keys, DataChunk &left, DataChunk &result);
 
@@ -119,6 +119,7 @@ public:
 		void GatherResult(Vector &result, const SelectionVector &sel_vector, const idx_t count, const idx_t col_idx);
 		idx_t ResolvePredicates(DataChunk &keys, SelectionVector &match_sel, SelectionVector *no_match_sel);
 	};
+	unique_ptr<DataChunk> buffer_;
 
 public:
 	JoinHashTable(BufferManager &buffer_manager, const vector<JoinCondition> &conditions,

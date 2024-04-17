@@ -16,7 +16,8 @@ using ProbeSpillLocalState = JoinHashTable::ProbeSpillLocalAppendState;
 
 JoinHashTable::JoinHashTable(BufferManager &buffer_manager_p, const vector<JoinCondition> &conditions_p,
                              vector<LogicalType> btypes, JoinType type_p)
-    : buffer_manager(buffer_manager_p),
+    : buffer_(make_uniq<DataChunk>()),
+      buffer_manager(buffer_manager_p),
       conditions(conditions_p),
       build_types(std::move(btypes)),
       entry_size(0),
@@ -345,7 +346,7 @@ unique_ptr<ScanStructure> JoinHashTable::InitializeScanStructure(DataChunk &keys
 	D_ASSERT(finalized);
 
 	// set up the scan structure
-	auto ss = make_uniq<ScanStructure>(*this, key_state);
+	auto ss = make_uniq<ScanStructure>(*this, key_state, buffer_.get());
 
 	if (join_type != JoinType::INNER) {
 		ss->found_match = make_unsafe_uniq_array<bool>(STANDARD_VECTOR_SIZE);
@@ -383,13 +384,13 @@ unique_ptr<ScanStructure> JoinHashTable::Probe(DataChunk &keys, TupleDataChunkSt
 	return ss;
 }
 
-ScanStructure::ScanStructure(JoinHashTable &ht_p, TupleDataChunkState &key_state_p)
+ScanStructure::ScanStructure(JoinHashTable &ht_p, TupleDataChunkState &key_state_p, DataChunk *buffer)
     : key_state(key_state_p),
       pointers(LogicalType::POINTER),
       sel_vector(STANDARD_VECTOR_SIZE),
       ht(ht_p),
       finished(false),
-      buffer(nullptr),
+      buffer(buffer),
       target_vector(STANDARD_VECTOR_SIZE) {
 }
 
@@ -537,11 +538,10 @@ void ScanStructure::NextInnerJoin(DataChunk &keys, DataChunk &left, DataChunk &r
 				res_chunk = &result;
 			} else {
 				// init the buffer
-				if (buffer == nullptr) {
-					buffer = make_uniq<DataChunk>();
+				if (buffer->ColumnCount() == 0) {
 					buffer->Initialize(Allocator::DefaultAllocator(), result.GetTypes());
 				}
-				res_chunk = buffer.get();
+				res_chunk = buffer;
 				base_count = 0;
 			}
 
